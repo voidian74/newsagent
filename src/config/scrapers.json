@@ -1,0 +1,29 @@
+{
+  "scrapers": [
+    {
+      "id": "naver_finance",
+      "name": "네이버 금융 뉴스",
+      "url": "https://finance.naver.com/news/mainnews.naver",
+      "category": "domestic",
+      "selectors": {
+        "container": ".mainNewsList li",
+        "title": ".articleSubject a",
+        "link": ".articleSubject a",
+        "date": ".articleSummary .wdate"
+      }
+    },
+    {
+      "id": "blockmedia",
+      "name": "블록미디어(암호화폐 뉴스)",
+      "url": "https://www.blockmedia.co.kr/feed",
+      "category": "crypto",
+      "isRss": true,
+      "selectors": {
+        "container": "item",
+        "title": "title",
+        "link": "link",
+        "date": "pubDate"
+      }
+    }
+  ]
+}
