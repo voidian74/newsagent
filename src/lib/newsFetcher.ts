@@ -40,10 +40,38 @@ export async function scrapeUrl(scraper: any): Promise<NewsArticle[]> {
           link = titleEl.attr('href') || $(el).find(scraper.selectors.link).first().attr('href') || '';
       }
       
-      const dateText = $(el).find(scraper.selectors.date).first().text().trim() || new Date().toISOString();
+      let dateText = $(el).find(scraper.selectors.date).first().text().trim() || new Date().toISOString();
+      
+      // 한국 뉴스 사이트의 날짜 형식이 시간대(TZ)를 포함하지 않는 경우 KST(+09:00)로 명시적 지정
+      if (dateText.match(/^\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}(:\d{2})?$/)) {
+        dateText = dateText.replace(' ', 'T') + '+09:00';
+      } else if (dateText.match(/^\d{4}\.\d{2}\.\d{2}\s\d{2}:\d{2}(:\d{2})?$/)) {
+        dateText = dateText.replace(/\./g, '-').replace(' ', 'T') + '+09:00';
+      }
+
+      let summaryText = '';
+      if (scraper.selectors.summary) {
+        if (isRss) {
+          summaryText = $(el).find(scraper.selectors.summary).first().text().replace(/<[^>]+>/g, '').trim();
+        } else {
+          // HTML인 경우 날짜나 언론사 등 불필요한 태그 제거
+          const sumEl = $(el).find(scraper.selectors.summary).first().clone();
+          if (scraper.selectors.date) {
+            sumEl.find(scraper.selectors.date).remove();
+          }
+          sumEl.find('.press, .wdate').remove();
+          summaryText = sumEl.text().trim();
+        }
+        
+        // CDATA 등 정리
+        summaryText = summaryText.replace(/<!\[CDATA\[(.*?)\]\]>/g, '$1').trim();
+        // 150자 제한 (extractMetadata와 동일)
+        summaryText = summaryText.length > 150 ? summaryText.substring(0, 150) + '...' : summaryText;
+      }
       
       if (title && link) {
         const meta = extractMetadata(title);
+        const finalSummary = summaryText || meta.summary;
         
         let fullLink = link;
         if (link.startsWith('/')) {
@@ -57,7 +85,7 @@ export async function scrapeUrl(scraper: any): Promise<NewsArticle[]> {
           title: title,
           link: fullLink,
           date: dateText,
-          summary: meta.summary,
+          summary: finalSummary,
           tags: meta.tags
         });
       }

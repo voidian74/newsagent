@@ -9,7 +9,8 @@
         "container": ".mainNewsList li",
         "title": ".articleSubject a",
         "link": ".articleSubject a",
-        "date": ".articleSummary .wdate"
+        "date": ".articleSummary .wdate",
+        "summary": ".articleSummary"
       }
     },
     {
@@ -22,7 +23,8 @@
         "container": "item",
         "title": "title",
         "link": "link",
-        "date": "pubDate"
+        "date": "pubDate",
+        "summary": "description"
       }
     }
   ]
